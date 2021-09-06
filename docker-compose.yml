@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  db:
+    build: ./backend/mysql/
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: app-db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./backend/mysql/mysql_data:/var/lib/mysql
+      - ./backend/mysql/sqls:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    tty: true
+  api:
+    build: ./backend/flask_back
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    volumes:
+      - "./backend/flask_back:/flask_back"
+    tty: true
+    environment:
+      TZ: Asia/Tokyo
+      FLASK_APP: run.py
+      FLASK_ENV: development
+    #command: flask run -h 0.0.0.0
+  front:
+    build: ./front
+    volumes:
+      - "./front/:/usr/src/app"
+    #command: sh -c "cd react-app && npm start"
+    ports:
+      - "3000:3000"
+    tty: true
