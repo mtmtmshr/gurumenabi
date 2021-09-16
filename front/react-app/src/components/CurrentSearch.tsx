@@ -29,7 +29,7 @@ const CurrentSearch:React.FC = () => {
     const dist_list = [500, 1000, 2000, 3000, 4000, 5000]
 
     const dispatch = useDispatch();
-    const [use_geo, setUsegeo] = useState<boolean>(false)
+    const [isGeoLoding , setIsGeoLoding ] = useState<boolean>(false)
     const [error, setIsError] = useState<boolean>(false)
     const budget_list = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
@@ -67,17 +67,54 @@ const CurrentSearch:React.FC = () => {
         dispatch(setIsBottomlessCup(value))
     }
 
+    const SearchFromCurrentLocation = () => {
+        // 位置情報loading開始
+        setIsGeoLoding(true)
+
+        getUserGeo().then((result:any) => {
+            const params = { lat: result.lat, lng: result.lng }
+            const qs = new URLSearchParams(params)
+            const fetchAddresFromAPI = () => {
+                fetch(`${URL}location?${qs}`, {
+                    method: 'GET',
+                }).then((res)=>{
+                    if (!res.ok) {
+                        // fetchエラー
+                        setIsError(true)
+                    }
+                    res.json().then((r) => {
+                        setLocation(r.location)
+                        setIsGeoLoding(false)
+                    }).catch((e) => {
+                        setIsError(true)
+                    });
+                })
+                // 経緯度情報をredux storeに保存
+                setLng(result.lng)
+                setLat(result.lat)
+            }
+            fetchAddresFromAPI()
+        }).catch(error => {
+            // 端末が、GeoLacation APIに対応していないときのエラー
+            setIsGeoLoding(false)
+            setIsError(true)
+        });
+
+        
+    }
 
     return (
         <>
             <TabPanel value="2" className="rounded-xl border-2">
                 {error && "現在地の取得に失敗しました。"}
-                { ((!location && !use_geo) || error) ?
-                <Button onClick={()=>setUsegeo(true)} color="primary" variant="outlined">現在地を取得する</Button>
-                :<SearchFromCurrentLocation setIsError={setIsError} setLng={setLng} setLat={setLat} setLocation={setLocation} location={location}/>
-                }
-                { ( location && use_geo ) && <span className="pl-6"><Button onClick={() => setLocation("")} color="primary" variant="outlined">地点再登録</Button></span> }
-                {(location && !location.includes("香川県")) && <p className="pl-2 text-red-500">この機能は香川県でしか使えません</p>}
+                {/*位置情報情報がない かつ 位置情報取得中でない ならば 取得ボタンを表示*/}
+                { (!location && !isGeoLoding ) && <Button onClick={()=>SearchFromCurrentLocation()} color="primary" variant="outlined">現在地を取得する</Button> }
+                {/* 位置情報取得中 ならば Loadingを表示*/}
+                { isGeoLoding && <span className="pl-6">Loading</span>}
+                {/* 位置情報がある かつ 位置情報取得中でない ならば 位置情報を表示*/}
+                { ( location && !isGeoLoding ) && <span className="pl-6"><span className="pr-6">{location}</span><Button onClick={() => {SearchFromCurrentLocation()}} className="pl-8" color="primary" variant="outlined">地点再登録</Button></span> }
+
+                {(location && !location.includes("香川県") && !isGeoLoding) && <p className="pl-2 text-red-500">この機能は香川県でしか使えません</p>}
                 <FormGroup row>
                     <form>
                         <SimpleSelect<number> value={dist} handleChange={handleChangeDist} target_list={dist_list} title="現在地からの距離（m）" disabled={false} />
@@ -93,7 +130,7 @@ const CurrentSearch:React.FC = () => {
 }
 
 
-function getUsergeo() {
+function getUserGeo() {
     //ユーザーのブラウザがGeolocation APIに対応していた場合
     const getLocationFunc = () => {
         return new Promise((resolve, reject) => {
@@ -119,59 +156,6 @@ function getUsergeo() {
     }
 
     return getLocationFunc()
-}
-
-interface SearchFromCurrentLocationProps {
-    setLng:(prm:number) => void,
-    setLat:(prm:number) => void,
-    setLocation:(prm:string) => void,
-    setIsError:(prm:boolean) => void,
-    location: string
-}
-
-function SearchFromCurrentLocation(props: SearchFromCurrentLocationProps) {
-    const { setLng, setLat, setLocation, setIsError, location } = props;
-    useEffect(() => {
-        if (location === "") {
-            getUsergeo().then((result:any) => {
-                const params = { lat: result.lat, lng: result.lng }
-                const qs = new URLSearchParams(params)
-                fetch(`${URL}location?${qs}`, {
-                    method: 'GET',
-                })
-                .then((res)=>{
-                    if (!res.ok) {
-                        throw new Error("サーバーエラー");
-                    }
-                    res.json()
-                    .then((r) => {
-                        setLocation(r.location)
-                    })
-                    .catch((e) => {
-                        console.log(e)
-                    });
-                })
-                setLng(result.lng)
-                setLat(result.lat)
-            }).catch(error => {
-                // ネットワークエラーでも !response.ok でもここで処理できる
-                setIsError(true)
-                console.error('エラーが発生しました', error);
-            });
-        }
-    }, [location, setLat, setLng, setLocation]);
-
-    return(
-        <>
-            <span className="mb-4">
-                <span>現在地：</span>
-                {location ?
-                location
-                : "取得中…(初回は時間がかかる場合があります)"
-                }
-            </span>
-        </>
-    )
 }
 
 export default CurrentSearch

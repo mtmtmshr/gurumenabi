@@ -11,5 +11,5 @@ RUN pip install -r requirements.txt
 
 RUN export FLASK_APP='run.py'
 
-CMD ["python", "run.py"]]
+CMD ["python", "run.py"]
 
