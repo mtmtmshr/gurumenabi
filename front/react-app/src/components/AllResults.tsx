@@ -37,7 +37,7 @@ const AllResults:React.FC = () => {
                             </div>
                             
                             <div className="w-full text-xs xl, lg, md:pt-12 xl, lg, md:pl-12 xl, lg, md:h-52">
-                                <p><a href={restaurant["url"]} className="text-indigo-500 underline xl, lg, md:text-lg">{restaurant["name"]}</a></p>
+                                <p><a target="_blank" rel="noopener noreferrer" href={restaurant["url"]} className="text-indigo-500 underline xl, lg, md:text-lg">{restaurant["name"]}</a></p>
                                 <p className="pt-2">{restaurant["address"]}</p>
                                 <p className="pt-2">{restaurant["tel"]}</p>
                             </div>

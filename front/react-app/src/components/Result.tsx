@@ -71,7 +71,7 @@ const Result:React.FC= (  ) => {
                     <table className="w-3/5 m-auto">
                         <tbody>
                             <tr><td className="border-2" colSpan={2}><img alt="result" src={storeImage} className="m-auto w-96"/></td></tr>
-                            <tr><td className="max-w-40 border-2">店名</td><td className="border-2"><a href={restaurant.url} className="text-indigo-500 underline">{restaurant.name}</a></td></tr>
+                            <tr><td className="max-w-40 border-2">店名</td><td className="border-2"><a href={restaurant.url} target="_blank" rel="noopener noreferrer" className="text-indigo-500 underline">{restaurant.name}</a></td></tr>
                             <tr><td className="border-2">住所</td><td className="border-2">{restaurant.address}</td></tr>
                             <tr><td className="border-2">TEL</td><td className="border-2">{restaurant.tel}</td></tr>
                         </tbody>
