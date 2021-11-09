@@ -16,6 +16,7 @@ import {
     setIsAPIRegected
 } 
 from "../features/restaurantsSlice"
+import * as H from 'history';
 
 
 interface CategoryFormProps {
@@ -45,12 +46,18 @@ function CategoryForm(props:CategoryFormProps) {
     );
 }
 
+interface LocationState {
+    from: {
+        pathname: string;
+    };
+    error: boolean;
+}
 
 const Home: React.FC = (props) => {
     const [tabValue, setTabValue] = useState("1")
-    const location:any = useLocation()
+    const location = useLocation<LocationState>()
     const dispatch = useDispatch();
-    const category_labels = ['ALL', 'ファミレス・ファーストフード', '日本料理・郷土料理', 'イタリアン・フレンチ', 'すし・魚料理・シーフード', '中華', '焼き鳥・肉料理・串料理', '洋食', '鍋', 'ラーメン・麺料理', '欧米・各国料理', 'カフェ・スイーツ', 'お酒', 'アジア・エスニック料理', 'お好み焼き・粉物', '宴会・カラオケ・エンターテイメント', 'カレー', 'ダイニングバー・バー・ビアホール', '和食', '焼肉・ホルモン', 'オーガニック・創作料理', '居酒屋'] 
+    const category_labels:string[] = ['ALL', 'ファミレス・ファーストフード', '日本料理・郷土料理', 'イタリアン・フレンチ', 'すし・魚料理・シーフード', '中華', '焼き鳥・肉料理・串料理', '洋食', '鍋', 'ラーメン・麺料理', '欧米・各国料理', 'カフェ・スイーツ', 'お酒', 'アジア・エスニック料理', 'お好み焼き・粉物', '宴会・カラオケ・エンターテイメント', 'カレー', 'ダイニングバー・バー・ビアホール', '和食', '焼肉・ホルモン', 'オーガニック・創作料理', '居酒屋'] 
     const checked_category = useSelector(selectCheckedCategory);
 
     const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>):void => {
@@ -65,7 +72,7 @@ const Home: React.FC = (props) => {
     return (
         <div>
             <h2 className="py-2 text-2xl">飲食店を自動で選択します</h2>
-            <h3 className="py-3">条件を選択してください <span className="text-red-500 text-2xl">{location?.state?.error && "検索結果が見つかりませんでした。条件を変更してください"}</span></h3>
+            <h3 className="py-3">条件を選択してください <span className="text-red-500 text-2xl">{location.state?.error && "検索結果が見つかりませんでした。条件を変更してください"}</span></h3>
             <TabContext value={tabValue}>
                 <TabList 
                     onChange={(event:React.ChangeEvent<{}>, newValue:string) => {
