@@ -23,6 +23,10 @@ import {
 from "../features/restaurantsSlice"
 const URL = process.env.REACT_APP_API_URL
 
+interface LocationResultState {
+    lat: number,
+    lng: number
+}
 
 const CurrentSearch:React.FC = () => {
     const history = useHistory();
@@ -71,27 +75,29 @@ const CurrentSearch:React.FC = () => {
         // 位置情報loading開始
         setIsGeoLoding(true)
 
-        getUserGeo().then((result:any) => {
-            const params = { lat: result.lat, lng: result.lng }
-            const qs = new URLSearchParams(params)
+        getUserGeo().then((result:LocationResultState | null) => {
             const fetchAddresFromAPI = () => {
-                fetch(`${URL}location?${qs}`, {
-                    method: 'GET',
-                }).then((res)=>{
-                    if (!res.ok) {
-                        // fetchエラー
-                        setIsError(true)
-                    }
-                    res.json().then((r) => {
-                        setLocation(r.location)
-                        setIsGeoLoding(false)
-                    }).catch((e) => {
-                        setIsError(true)
-                    });
-                })
-                // 経緯度情報をredux storeに保存
-                setLng(result.lng)
-                setLat(result.lat)
+                if (result) {
+                    const params = {lat:String(result.lat), lng: String(result.lng)}
+                    const qs = new URLSearchParams(params)
+                    fetch(`${URL}location?${qs}`, {
+                        method: 'GET',
+                    }).then((res)=>{
+                        if (!res.ok) {
+                            // fetchエラー
+                            setIsError(true)
+                        }
+                        res.json().then((r) => {
+                            setLocation(r.location)
+                            setIsGeoLoding(false)
+                        }).catch((e) => {
+                            setIsError(true)
+                        });
+                    })
+                    // 経緯度情報をredux storeに保存
+                    setLng(result.lng)
+                    setLat(result.lat)
+                }
             }
             fetchAddresFromAPI()
         }).catch(error => {
@@ -130,9 +136,9 @@ const CurrentSearch:React.FC = () => {
 }
 
 
-function getUserGeo() {
+function getUserGeo(): Promise<LocationResultState | null>{
     //ユーザーのブラウザがGeolocation APIに対応していた場合
-    const getLocationFunc = () => {
+    const getLocationFunc = (): Promise<LocationResultState | null> => {
         return new Promise((resolve, reject) => {
             if (navigator.geolocation) {
                 //getCurrentPositionメソッドで現在地を取得
@@ -154,7 +160,6 @@ function getUserGeo() {
             }
         })
     }
-
     return getLocationFunc()
 }
 
