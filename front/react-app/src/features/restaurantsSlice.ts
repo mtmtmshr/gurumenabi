@@ -6,7 +6,7 @@ import axios from 'axios'
 const category_labels = ['ファミレス・ファーストフード', '日本料理・郷土料理', 'イタリアン・フレンチ', 'すし・魚料理・シーフード', '中華', '焼き鳥・肉料理・串料理', '洋食', '鍋', 'ラーメン・麺料理', '欧米・各国料理', 'カフェ・スイーツ', 'お酒', 'アジア・エスニック料理', 'お好み焼き・粉物', '宴会・カラオケ・エンターテイメント', 'カレー', 'ダイニングバー・バー・ビアホール', '和食', '焼肉・ホルモン', 'オーガニック・創作料理', '居酒屋']
 
 interface restaurantState {
-    useArea: boolean,
+    isUseArea: boolean,
     area: string,
     is_bottomless_cup: boolean,
     is_private_room: boolean,
@@ -23,7 +23,7 @@ interface restaurantState {
 }
 
 const initialState:restaurantState = {
-    useArea: true,
+    isUseArea: true,
     area: "高松市全域",
     is_bottomless_cup: false,
     is_private_room: false,
@@ -45,7 +45,7 @@ const URL = process.env.REACT_APP_API_URL
 export const fetchRetauarntsJSON = createAsyncThunk("fetch/api", async (_, {getState}) => {
     const state = getState() as RootState
     let restaurants = undefined;
-    if ( state.restaurant.useArea ) {
+    if ( state.restaurant.isUseArea ) {
         const res = await axios.get(`${URL}gurume`, {
             params: {
                 area: state.restaurant.area,
@@ -102,6 +102,9 @@ export const restaurantSlice = createSlice({
         },
         setCheckedCategory: (state, action: PayloadAction<string>) => {
             if (action.payload !== "ALL") {
+                if (state.checked_category[action.payload]) {
+                    state.checked_category["ALL"] = false
+                }
                 state.checked_category[action.payload] = !state.checked_category[action.payload]
             } else {
                 state.checked_category[action.payload] = !state.checked_category[action.payload]
@@ -117,7 +120,7 @@ export const restaurantSlice = createSlice({
             state.isAPIfinished = false
         },
         setUseArea: (state, action: PayloadAction<boolean>) => {
-            state.useArea = action.payload
+            state.isUseArea = action.payload
         },
         setIsAPIRegected: (state, action: PayloadAction<boolean>) => {
             state.isAPIRegected = action.payload
@@ -149,6 +152,7 @@ export const {
     setIsAPIRegected
 } = restaurantSlice.actions;
 
+export const selectUseArea = (state: RootState) => state.restaurant.isUseArea;
 export const selectIsAPIRegected = (state: RootState) => state.restaurant.isAPIRegected;
 export const selectIsAPIFinished = (state: RootState) => state.restaurant.isAPIfinished;
 export const selectCheckedCategory = (state: RootState) => state.restaurant.checked_category;
